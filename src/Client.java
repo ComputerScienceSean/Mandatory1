@@ -48,12 +48,23 @@ public class Client implements Runnable {
             String name = sc.nextLine();
             write("JOIN " + name + ", " + ipToConnect + ":" + portToConnect);
 
+
             try {
                 InputStream read = socket.getInputStream();
                 byte[] dataIn = new byte[1024];
                 read.read(dataIn);
                 String msgIn = new String(dataIn);
                 msgIn = msgIn.trim();
+
+                if (msgIn.startsWith("J_ER ")){
+                    System.out.println("J_ER received. Restarting server.");
+                    serverConnection(args);
+                }
+
+                if (msgIn.startsWith("DATA ")){
+                    System.out.println(msgIn.substring(5));
+                }
+
                 if (msgIn.equals("J_OK")) {
                     new Thread(() -> {
                         while (true) {
@@ -77,13 +88,17 @@ public class Client implements Runnable {
                     while (shouldChatRun) {
                         System.out.println("What is your message?");
                         String line = sc.nextLine();
+                        String lineToSend = "DATA " + name + ": " + line;
+
                         if (line.equalsIgnoreCase("quit")) {
-                            write("quit");
+                            quitMsg();
                             shouldChatRun = false;
-                        } else if (line.length() == 0) {
+                        }
+
+                         else if (line.length() == 0) {
                             shouldChatRun = false;
                         } else {
-                            write(line);
+                            write(lineToSend);
                         }
                     }
 
@@ -100,6 +115,19 @@ public class Client implements Runnable {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+    public static void quitMsg(){
+        OutputStream output = null;
+        try {
+            output = socket.getOutputStream();
+            output.write("QUIT".getBytes());
+            output.flush();
+            socket.close();
+            System.exit(0);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
 
@@ -133,4 +161,7 @@ public class Client implements Runnable {
         }
         System.out.println("Client IMAV stopped");
     }
+
+
+
 }

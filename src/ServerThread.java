@@ -34,16 +34,15 @@ public class ServerThread extends Thread {
                         ok = false;
                     }
 
-                } else
+                } else{
                     ok = false;
+                }
 
 
                 if (ok == true) {
 
                     boolean check = true;
                     for (User user : users) {
-                        System.out.println(user.getName());
-                        System.out.println(name);
                         if (user.getName().equalsIgnoreCase(name)) {
                             write("J_ER 666: Username already exists");
                             check = false;
@@ -70,7 +69,21 @@ public class ServerThread extends Thread {
                         if (input.length() == 0) {
                             shouldRun = false;
                         } else {
+
                             String receivedMsg = "DATA " + name + ": " + input;
+                            String quitMsg[] = receivedMsg.split(":");
+                            if (quitMsg[1].trim().equalsIgnoreCase("quit")) {
+                                System.out.println("* " + name + " Disconnected");
+
+                                for (int i = 0; i >= users.size(); i++) {
+                                    if (users.get(i).getName().equals(name)) {
+                                        users.remove(i);
+                                        break;
+                                    }
+
+                                }
+                                System.out.println("* List of present users" + users);
+                            }
                             System.out.println(receivedMsg);
                             // write(name + " said: " + input);
                             writeToClients(receivedMsg, u);
@@ -81,15 +94,6 @@ public class ServerThread extends Thread {
                 }
             }
 
-            System.out.println("* " + name + " Disconnected");
-            System.out.println("* List of present users" + users);
-            for (int i = 0; i >= users.size(); i++) {
-                if (users.get(i).getName().equals(name)) {
-                    users.remove(i);
-                    break;
-                }
-
-            }
 
         } catch (IOException ex) {
             ex.printStackTrace();
